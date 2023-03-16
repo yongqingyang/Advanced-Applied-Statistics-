@@ -1,0 +1,31 @@
+#讀取檔案
+ACOV.raw <- read.csv("food.csv")
+ACOV<-ACOV.raw[c(16,52,53)]
+head(ACOV)
+
+#檢查資料型態並將連續變項轉為類別變項
+str(ACOV)
+ACOV$drink  <-as.factor(ACOV$drink)
+str(ACOV)
+
+#檢查是否有交互作用項
+TEST1 <- aov(weight ~ waffle_calories *drink,data=ACOV)
+summary(TEST1)
+
+#檢查樣本常態性
+describe(ACOV$weight)
+
+#檢查變異數同質性
+bartlett.test(weight~drink,data=ACOV)
+
+#因交互作用項waffle_calories未達統計顯著，將其移除後再進行ANCOVA分析
+ACOV.OP<-aov(weight~waffle_calories+drink  ,data=ACOV)
+summary(ACOV.OP)
+
+#變項原本的平均數
+aggregate(weight~drink , mean, data=ACOV)
+
+#將交互作用項移除，調整後的變項平均數
+library(effects)
+adj.mean<-effect("drink ",ACOV.OP)
+data.frame(adj.mean)
